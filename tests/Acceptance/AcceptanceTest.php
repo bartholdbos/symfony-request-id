@@ -6,10 +6,12 @@ namespace DR\SymfonyRequestId\Tests\Acceptance;
 
 use DR\SymfonyRequestId\RequestIdGenerator;
 use DR\SymfonyRequestId\RequestIdStorage;
+use DR\SymfonyRequestId\SimpleIdStorage;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\TestWith;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[CoversNothing]
 class AcceptanceTest extends WebTestCase
@@ -90,6 +92,17 @@ class AcceptanceTest extends WebTestCase
         $service = self::getContainer()->get($class);
 
         static::assertInstanceOf($class, $service);
+    }
+
+    public function testHttpClientIsDecorated(): void
+    {
+        self::getService(SimpleIdStorage::class)->setRequestId('1234');
+
+        $service = self::getService(HttpClientInterface::class, 'http_client.test');
+
+        $response = $service->request('GET', 'http://localhost/test');
+
+        self::assertArrayHasKey('x-request-id', $response->getHeaders());
     }
 
     /**

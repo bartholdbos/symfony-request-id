@@ -16,6 +16,7 @@ symfony_request_id:
   request_header: Request-Id
   response_header: Request-Id
   trust_request_header: true
+  http_client: ~
 
 twig:
   strict_variables: "%kernel.debug%"
@@ -32,6 +33,14 @@ services:
         class: DR\SymfonyRequestId\Tests\Acceptance\MemoryHandler
         calls:
             - [setFormatter, ["@log.formatter"]]
+    DR\SymfonyRequestId\Tests\Acceptance\MockClientCallback:
+    http_client.test:
+      class: Symfony\Component\HttpClient\MockHttpClient
+      public: true
+      arguments:
+        - '@DR\SymfonyRequestId\Tests\Acceptance\MockClientCallback'
+      tags:
+        - { name: 'http_client.request_id' }
 
 monolog:
     handlers:
